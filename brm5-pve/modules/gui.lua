@@ -270,16 +270,26 @@ function GUI:init(services, config, callbacks)
     title.TextXAlignment = "Left"
     title.BackgroundTransparency = 1
 
-    -- Sidebar
+    -- Sidebar (minimal + glassy)
     local sidebar = Instance.new("Frame", main)
     sidebar.Position = UDim2.new(0, 0, 0, 40)
-    sidebar.Size = UDim2.new(0, 130, 1, -40)
-    sidebar.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    sidebar.Size = UDim2.new(0, 120, 1, -40)
+    sidebar.BackgroundColor3 = Color3.fromRGB(18, 18, 22)
+    sidebar.BackgroundTransparency = 0.15
     sidebar.BorderSizePixel = 0
+
+    local sidebarCorner = Instance.new("UICorner", sidebar)
+    sidebarCorner.CornerRadius = UDim.new(0, 10)
+
+    local sideStroke = Instance.new("UIStroke", sidebar)
+    sideStroke.Color = Color3.fromRGB(65, 140, 255)
+    sideStroke.Transparency = 0.55
+    sideStroke.Thickness = 1
 
     local sideLayout = Instance.new("UIListLayout", sidebar)
     sideLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-    sideLayout.Padding = UDim.new(0, 8)
+    sideLayout.Padding = UDim.new(0, 10)
+
 
     -- Content Container
     local container = Instance.new("Frame", main)
@@ -304,42 +314,66 @@ function GUI:init(services, config, callbacks)
     }
 
     -- Add Tab Buttons
-    local function addTabBtn(name, targetTab)
+    local function addTabBtn(name, targetTab, icon)
         local b = Instance.new("TextButton", sidebar)
-        b.Size = UDim2.new(1, -20, 0, 35)
-        b.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-        b.TextColor3 = Color3.new(0.8, 0.8, 0.8)
+        b.Size = UDim2.new(1, -20, 0, 40)
+        b.BackgroundColor3 = Color3.fromRGB(28, 28, 34)
+        b.BackgroundTransparency = 0.18
+        b.TextColor3 = Color3.new(0.75, 0.85, 1)
         b.Font = "GothamMedium"
         b.TextSize = 13
-        Instance.new("UICorner", b)
+        b.AutoButtonColor = true
 
-        self.tabButtons[name] = b
-        if name == "Combat" then
-            b.BackgroundColor3 = Color3.fromRGB(85, 170, 255)
-            b.TextColor3 = Color3.new(0, 0, 0)
+        local corner = Instance.new("UICorner", b)
+        corner.CornerRadius = UDim.new(0, 10)
+
+        local stroke = Instance.new("UIStroke", b)
+        stroke.Color = Color3.fromRGB(90, 170, 255)
+        stroke.Transparency = 0.75
+        stroke.Thickness = 1
+
+        local function setActive(isActive)
+            if isActive then
+                b.BackgroundColor3 = Color3.fromRGB(85, 170, 255)
+                b.BackgroundTransparency = 0
+                b.TextColor3 = Color3.new(0, 0, 0)
+                stroke.Transparency = 0
+            else
+                b.BackgroundColor3 = Color3.fromRGB(28, 28, 34)
+                b.BackgroundTransparency = 0.18
+                b.TextColor3 = Color3.new(0.75, 0.85, 1)
+                stroke.Transparency = 0.75
+            end
         end
 
-        b.Text = name
-        b.MouseButton1Click:Connect(function()
-            for _, btn in pairs(self.tabButtons) do
-                btn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-                btn.TextColor3 = Color3.new(0.8, 0.8, 0.8)
-            end
-            b.BackgroundColor3 = Color3.fromRGB(85, 170, 255)
-            b.TextColor3 = Color3.new(0, 0, 0)
+        self.tabButtons[name] = b
 
+        b.Text = (icon and (icon .. "  ") or "") .. name
+        b.MouseButton1Click:Connect(function()
+            for tabName, btn in pairs(self.tabButtons) do
+                setActive(tabName == name)
+            end
             for _, tab in pairs(self.tabs) do
                 tab.Visible = false
             end
             targetTab.Visible = true
         end)
+
+        -- default active
+        if name == "Combat" then
+            setActive(true)
+        else
+            setActive(false)
+        end
     end
 
-    addTabBtn("Combat", tabCombat)
-    addTabBtn("Visuals", tabVisuals)
-    addTabBtn("Weapons", tabWeapons)
-    addTabBtn("Colors", tabColors)
-    addTabBtn("Credits and Help", tabCredits)
+
+    addTabBtn("Combat", tabCombat, "⚔️")
+    addTabBtn("Visuals", tabVisuals, "👁️")
+    addTabBtn("Weapons", tabWeapons, "🔧")
+    addTabBtn("Colors", tabColors, "🎨")
+    addTabBtn("Credits and Help", tabCredits, "❓")
+
 
     -- COMBAT TAB
     createButton(tabCombat, "Silent 🎯", config.sizingEnabled, callbacks.onSizingToggle)
