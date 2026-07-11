@@ -138,7 +138,7 @@ local callbacks = {
     end,
 
     onStabilityToggle = function(enabled)
-        Config.patchOptions.recoil = enabled
+        Config.patchOptions.recoil = true
         Weapons.patchWeapons(Services.ReplicatedStorage, Config.patchOptions)
         saveConfig()
     end,
