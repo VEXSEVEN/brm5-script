@@ -13,13 +13,19 @@ end
 function Weapons.patchWeapons(replicatedStorage, patchOptions)
     -- Identificăm calea corectă către fișierele de configurare
     local shared = replicatedStorage:FindFirstChild("Shared")
-    if not shared then return end
-    
+    if not shared then
+        return
+    end
+
     local configs = shared:FindFirstChild("Configs")
-    if not configs then return end
-    
+    if not configs then
+        return
+    end
+
     local weaponsPlayer = configs:FindFirstChild("Weapon") and configs.Weapon:FindFirstChild("Weapons_Player")
-    if not weaponsPlayer then return end
+    if not weaponsPlayer then
+        return
+    end
 
     -- Iterăm prin toate platformele de arme
     for _, platform in pairs(weaponsPlayer:GetChildren()) do
@@ -29,17 +35,16 @@ function Weapons.patchWeapons(replicatedStorage, patchOptions)
                     -- Vizăm doar modulele de tip receiver
                     if child:IsA("ModuleScript") and child.Name:match("^Receiver%.") then
                         local success, receiver = pcall(require, child)
-                        
+
                         if success and receiver and receiver.Config and receiver.Config.Tune then
                             local tune = receiver.Config.Tune
-                            
+
                             -- Deblocăm tabela pentru a permite modificarea valorilor
                             forceUnlock(tune)
-                            
+
                             -- Aplicăm patch-ul de Recoil
                             if patchOptions.recoil then
                                 tune.Recoil_X = 0
-                                print("Weapon Recoil Status:", receiver.Config.Tune.Recoil_X == 0 and "Patch Applied" or "Patch FAILED")
                                 tune.Recoil_Z = 0
                                 tune.RecoilForce_Tap = 0
                                 tune.RecoilForce_Impulse = 0
@@ -48,10 +53,16 @@ function Weapons.patchWeapons(replicatedStorage, patchOptions)
                                 tune.RecoilAccelDamp_Crouch = Vector3.new(0, 0, 0)
                                 tune.RecoilAccelDamp_Prone = Vector3.new(0, 0, 0)
                             end
-                            
+
                             -- Aplicăm patch-ul de Firemodes (dacă este activat)
                             if patchOptions.firemodes then
                                 tune.Firemodes = {3, 2, 1, 0}
+                            end
+
+                            if tune.Recoil_X == 0 then
+                                print("DEBUG: Patch aplicat cu succes pe:", child.Name)
+                            else
+                                warn("DEBUG: Patch EȘUAT pe:", child.Name, "- Valoarea actuală:", tune.Recoil_X)
                             end
                         end
                     end
