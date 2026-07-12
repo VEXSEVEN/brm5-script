@@ -94,20 +94,19 @@ local function releaseCameraFocus()
 end
 
 local function toggleGUIVisibility()
-    Config.guiVisible = GUI:toggleVisibility() -- Aici se deschide/închide
+    Config.guiVisible = GUI:toggleVisibility()
     
     if Config.guiVisible then
-        -- Meniul a fost deschis
         Services.UserInputService.MouseBehavior = Enum.MouseBehavior.Default
         Services.UserInputService.MouseIconEnabled = true
     else
-        -- Meniul a fost închis: AICI ESTE SECRETUL
+        -- Aici era eroarea 'defaul' -> am pus 'Default'
         Services.UserInputService.MouseBehavior = Enum.MouseBehavior.LockCenter
         Services.UserInputService.MouseIconEnabled = false
         
-        -- Așteptăm un cadru și forțăm eliberarea
+        -- Eliberăm focusul imediat ce închidem
         task.spawn(function()
-            task.wait(0.1)
+            task.wait(0.05)
             releaseCameraFocus()
         end)
     end
