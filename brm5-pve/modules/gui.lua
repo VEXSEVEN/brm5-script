@@ -17,9 +17,10 @@ function GUI:init(services, config, callbacks)
         SubTitle = "PVE Pro",
         TabWidth = 160,
         Size = UDim2.fromOffset(580, 460),
-        Acrylic = true,
+        Acrylic = false, 
+        IntegrateBackdrop = false, -- ADĂUGĂ LINIA ASTA (previne suprapunerea peste cameră)
         Theme = "Dark",
-        MinimizeKey = Enum.KeyCode.LeftControl
+        MinimizeKey = Enum.KeyCode.RightShift 
     })
 
     self.Tabs = {
