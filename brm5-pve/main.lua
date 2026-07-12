@@ -247,13 +247,14 @@ local npcAccumulator = 0
 table.insert(runtimeConnections, Services.RunService.Heartbeat:Connect(function(dt)
     if Config.isUnloaded then return end
 
-    -- ACTUALIZARE CURSOR (din GUI)
     if Config.guiVisible then
         GUI:updateCursorPosition(Services.UserInputService)
-        -- FORȚĂM MouseBehavior de fiecare dată când meniul e deschis
-        -- pentru a preveni "lupta" cu scripturile BRM5
-        if Services.UserInputService.MouseBehavior ~= Enum.MouseBehavior.Default then
-            Services.UserInputService.MouseBehavior = Enum.MouseBehavior.Default
+        -- Dacă meniul e deschis, forțăm Default
+        Services.UserInputService.MouseBehavior = Enum.MouseBehavior.Default
+    else
+        -- DACA MENIUL E INCHIS, forțăm LockCenter (ca să nu ne lase jocul cu mouse-ul liber)
+        if Services.UserInputService.MouseBehavior ~= Enum.MouseBehavior.LockCenter then
+            Services.UserInputService.MouseBehavior = Enum.MouseBehavior.LockCenter
         end
     end
 
