@@ -11,6 +11,26 @@ function GUI:init(services, config, callbacks)
     local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
     local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
 
+
+    local screenGui = Instance.new("ScreenGui", services.CoreGui or services.Players.LocalPlayer:WaitForChild("PlayerGui"))
+    screenGui.Name = "CursorIndicatorGui"
+    self.screenGui = screenGui
+
+    local cursorIndicator = Instance.new("Frame", screenGui)
+    cursorIndicator.Name = "CursorIndicator"
+    cursorIndicator.Size = UDim2.fromOffset(10, 10)
+    cursorIndicator.AnchorPoint = Vector2.new(0.5, 0.5)
+    cursorIndicator.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    cursorIndicator.BorderSizePixel = 0
+    cursorIndicator.Visible = false -- Vizibil doar când meniul e deschis
+    cursorIndicator.ZIndex = 100
+    Instance.new("UICorner", cursorIndicator).CornerRadius = UDim.new(1, 0)
+    self.cursorIndicator = cursorIndicator
+
+    local cursorStroke = Instance.new("UIStroke", cursorIndicator)
+    cursorStroke.Color = Color3.fromRGB(0, 0, 0)
+    cursorStroke.Thickness = 1.5
+    
     self.Fluent = Fluent
     self.Window = Fluent:CreateWindow({
         Title = "BRM5 " .. Fluent.Version,
