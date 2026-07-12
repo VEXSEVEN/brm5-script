@@ -84,10 +84,34 @@ local function forceMouseLock()
     Services.UserInputService.MouseIconEnabled = false
 end
 
+local function releaseCameraFocus()
+    -- Acestea forțează Roblox să elibereze focusul de pe orice GUI
+    Services.UserInputService.MouseBehavior = Enum.MouseBehavior.LockCenter
+    
+    -- Truc: Simulăm o mică interacțiune pentru a "păcăli" camera jocului
+    local VirtualInputManager = game:GetService("VirtualInputManager")
+    VirtualInputManager:SendMouseButtonEvent(0, 0, 0, false, game, 0)
+end
+
 local function toggleGUIVisibility()
-    Config.guiVisible = GUI:toggleVisibility()
-    task.wait(0.05)
-    syncMouseState()
+    Config.guiVisible = GUI:toggleVisibility() -- Aici se deschide/închide
+    
+    if Config.guiVisible then
+        -- Meniul a fost deschis
+        Services.UserInputService.MouseBehavior = Enum.MouseBehavior.Default
+        Services.UserInputService.MouseIconEnabled = true
+    else
+        -- Meniul a fost închis: AICI ESTE SECRETUL
+        Services.UserInputService.MouseBehavior = Enum.MouseBehavior.LockCenter
+        Services.UserInputService.MouseIconEnabled = false
+        
+        -- Așteptăm un cadru și forțăm eliberarea
+        task.spawn(function()
+            task.wait(0.1)
+            releaseCameraFocus()
+        end)
+    end
+    
     return Config.guiVisible
 end
 
