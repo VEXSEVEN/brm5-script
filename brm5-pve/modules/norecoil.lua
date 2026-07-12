@@ -39,6 +39,7 @@ function Weapons.patchWeapons(replicatedStorage, patchOptions)
                             -- Aplicăm patch-ul de Recoil
                             if patchOptions.recoil then
                                 tune.Recoil_X = 0
+                                print("Weapon Recoil Status:", receiver.Config.Tune.Recoil_X == 0 and "Patch Applied" or "Patch FAILED")
                                 tune.Recoil_Z = 0
                                 tune.RecoilForce_Tap = 0
                                 tune.RecoilForce_Impulse = 0
