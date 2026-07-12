@@ -86,6 +86,7 @@ end
 
 local function toggleGUIVisibility()
     Config.guiVisible = GUI:toggleVisibility()
+    task.wait(0.05)
     syncMouseState()
     return Config.guiVisible
 end
