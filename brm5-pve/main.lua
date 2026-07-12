@@ -99,7 +99,7 @@ end
 local function releaseCameraFocus()
     -- Acestea forțează Roblox să elibereze focusul de pe orice GUI
     Services.UserInputService.MouseBehavior = Enum.MouseBehavior.LockCenter
-    
+
     -- Truc: Simulăm o mică interacțiune pentru a "păcăli" camera jocului
     local VirtualInputManager = game:GetService("VirtualInputManager")
     VirtualInputManager:SendMouseButtonEvent(0, 0, 0, false, game, 0)
@@ -107,20 +107,22 @@ end
 
 local function toggleGUIVisibility()
     Config.guiVisible = GUI:toggleVisibility()
-    
+
+    -- FORȚARE EXPLICITĂ: Dezactivează capturarea de mouse a GUI-ului
+    local playerGui = Services.Players.LocalPlayer:WaitForChild("PlayerGui")
+    for _, gui in pairs(playerGui:GetChildren()) do
+        if gui:IsA("ScreenGui") and gui.Name ~= "PlayerGui" then -- Ajustează numele dacă e nevoie
+            gui.Enabled = Config.guiVisible
+        end
+    end
+
     if Config.guiVisible then
         Services.UserInputService.MouseBehavior = Enum.MouseBehavior.Default
-        Services.UserInputService.MouseIconEnabled = true
     else
-        -- 1. Resetăm comportamentul mouse-ului
+        -- Eliberare imediată
         Services.UserInputService.MouseBehavior = Enum.MouseBehavior.LockCenter
-        Services.UserInputService.MouseIconEnabled = false
-        
-        -- 2. Eliberăm focusul camerei (esențial pentru BRM5)
-        local VirtualInputManager = game:GetService("VirtualInputManager")
-        VirtualInputManager:SendMouseButtonEvent(0, 0, 0, false, game, 0)
     end
-    
+
     return Config.guiVisible
 end
 
@@ -255,14 +257,15 @@ local targetAccumulator = 0
 local npcAccumulator = 0
 
 table.insert(runtimeConnections, Services.RunService.Heartbeat:Connect(function(dt)
-    if Config.isUnloaded then return end
+    if Config.isUnloaded then
+        return
+    end
 
     if Config.guiVisible then
         GUI:updateCursorPosition(Services.UserInputService)
         Services.UserInputService.MouseBehavior = Enum.MouseBehavior.Default
+        -- ÎN LOC DE ACEEAȘI LOGICĂ, FOLOSEȘTE ASTA:
     else
-        -- DOAR DACĂ NU ESTE deja blocat corect, forțăm. 
-        -- Dacă jocul vrea să îl deblocheze, nu îl forța în fiecare milisecundă.
         if Services.UserInputService.MouseBehavior ~= Enum.MouseBehavior.LockCenter then
             Services.UserInputService.MouseBehavior = Enum.MouseBehavior.LockCenter
         end
