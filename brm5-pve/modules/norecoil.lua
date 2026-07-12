@@ -1,6 +1,5 @@
 local Weapons = {}
 
--- Funcție pentru a forța deblocarea tabelelor înghețate de sistemul BRM5
 local function forceUnlock(tbl)
     local mt = getrawmetatable(tbl)
     if mt then
@@ -11,63 +10,43 @@ local function forceUnlock(tbl)
 end
 
 function Weapons.patchWeapons(replicatedStorage, patchOptions)
+    print("DEBUG: Caut Shared...")
     local shared = replicatedStorage:FindFirstChild("Shared")
-    if not shared then
-        warn("DEBUG: Nu am găsit Shared")
-        return
-    end
-
+    if not shared then print("DEBUG: NU am găsit Shared!") return end
+    
+    print("DEBUG: Caut Configs...")
     local configs = shared:FindFirstChild("Configs")
-    if not configs then
-        warn("DEBUG: Nu am găsit Configs")
-        return
-    end
+    if not configs then print("DEBUG: NU am găsit Configs!") return end
+    
+    -- Verificăm dacă există Weapon și Weapons_Player
+    local weaponFolder = configs:FindFirstChild("Weapon")
+    if not weaponFolder then print("DEBUG: NU am găsit folderul Weapon!") return end
+    
+    local weaponsPlayer = weaponFolder:FindFirstChild("Weapons_Player")
+    if not weaponsPlayer then print("DEBUG: NU am găsit Weapons_Player!") return end
 
-    local weaponsPlayer = configs:FindFirstChild("Weapon") and configs.Weapon:FindFirstChild("Weapons_Player")
-    if not weaponsPlayer then
-        warn("DEBUG: Nu am găsit Weapons_Player")
-        return
-    end
+    print("DEBUG: Am găsit tot! Încep iterarea...")
 
-    print("DEBUG: Am găsit Weapons_Player, număr platforme: " .. #weaponsPlayer:GetChildren())
-
-    -- Iterăm prin toate platformele de arme
     for _, platform in pairs(weaponsPlayer:GetChildren()) do
         if platform:IsA("Folder") then
             for _, weapon in pairs(platform:GetChildren()) do
                 for _, child in pairs(weapon:GetChildren()) do
-                    -- Vizăm doar modulele de tip receiver
                     if child:IsA("ModuleScript") and child.Name:match("^Receiver%.") then
+                        print("DEBUG: Găsit receiver: " .. child.Name)
                         local success, receiver = pcall(require, child)
-
+                        
                         if success and receiver and receiver.Config and receiver.Config.Tune then
                             local tune = receiver.Config.Tune
-
-                            -- Deblocăm tabela pentru a permite modificarea valorilor
                             forceUnlock(tune)
-
-                            -- Aplicăm patch-ul de Recoil
+                            
                             if patchOptions.recoil then
                                 tune.Recoil_X = 0
                                 tune.Recoil_Z = 0
-                                tune.RecoilForce_Tap = 0
-                                tune.RecoilForce_Impulse = 0
                                 tune.Recoil_Camera = 0
-                                tune.Recoil_Range = Vector2.new(0, 0)
-                                tune.RecoilAccelDamp_Crouch = Vector3.new(0, 0, 0)
-                                tune.RecoilAccelDamp_Prone = Vector3.new(0, 0, 0)
+                                -- Adăugăm și asta pentru siguranță
+                                tune.Recoil_Random = Vector2.new(0, 0)
                             end
-
-                            -- Aplicăm patch-ul de Firemodes (dacă este activat)
-                            if patchOptions.firemodes then
-                                tune.Firemodes = {3, 2, 1, 0}
-                            end
-
-                            if tune.Recoil_X == 0 then
-                                print("DEBUG: Patch aplicat cu succes pe:", child.Name)
-                            else
-                                warn("DEBUG: Patch EȘUAT pe:", child.Name, "- Valoarea actuală:", tune.Recoil_X)
-                            end
+                            print("DEBUG: Patch aplicat pe: " .. child.Name)
                         end
                     end
                 end
