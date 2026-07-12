@@ -11,21 +11,25 @@ local function forceUnlock(tbl)
 end
 
 function Weapons.patchWeapons(replicatedStorage, patchOptions)
-    -- Identificăm calea corectă către fișierele de configurare
     local shared = replicatedStorage:FindFirstChild("Shared")
     if not shared then
+        warn("DEBUG: Nu am găsit Shared")
         return
     end
 
     local configs = shared:FindFirstChild("Configs")
     if not configs then
+        warn("DEBUG: Nu am găsit Configs")
         return
     end
 
     local weaponsPlayer = configs:FindFirstChild("Weapon") and configs.Weapon:FindFirstChild("Weapons_Player")
     if not weaponsPlayer then
+        warn("DEBUG: Nu am găsit Weapons_Player")
         return
     end
+
+    print("DEBUG: Am găsit Weapons_Player, număr platforme: " .. #weaponsPlayer:GetChildren())
 
     -- Iterăm prin toate platformele de arme
     for _, platform in pairs(weaponsPlayer:GetChildren()) do
