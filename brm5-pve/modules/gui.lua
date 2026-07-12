@@ -13,6 +13,19 @@ function GUI:init(services, config, callbacks)
         "https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
     local InterfaceManager = loadstring(game:HttpGet(
         "https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
+    local UserInputService = services.UserInputService
+
+    function GUI:setVisibleState(isVisible)
+        self.cursorIndicator.Visible = isVisible
+
+        if isVisible then
+            UserInputService.MouseBehavior = Enum.MouseBehavior.Default
+            UserInputService.MouseIconEnabled = true
+        else
+            UserInputService.MouseBehavior = Enum.MouseBehavior.LockCenter
+            UserInputService.MouseIconEnabled = false
+        end
+    end
 
     self.Fluent = Fluent
     -- În funcția init(services, config, callbacks)

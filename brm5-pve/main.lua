@@ -269,7 +269,6 @@ table.insert(runtimeConnections, Services.RunService.Heartbeat:Connect(function(
     
     Lighting:update(Services.Lighting, Config)
 
-    Lighting:update(Services.Lighting, Config)
 
     npcAccumulator = npcAccumulator + dt
     if npcAccumulator >= Config.NPC_REFRESH_INTERVAL then
