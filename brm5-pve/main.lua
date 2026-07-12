@@ -108,19 +108,21 @@ end
 local function toggleGUIVisibility()
     Config.guiVisible = GUI:toggleVisibility()
 
-    -- FORȚARE EXPLICITĂ: Dezactivează capturarea de mouse a GUI-ului
-    local playerGui = Services.Players.LocalPlayer:WaitForChild("PlayerGui")
-    for _, gui in pairs(playerGui:GetChildren()) do
-        if gui:IsA("ScreenGui") and gui.Name ~= "PlayerGui" then -- Ajustează numele dacă e nevoie
-            gui.Enabled = Config.guiVisible
-        end
-    end
-
+    -- Setăm starea o singură dată, la schimbare
     if Config.guiVisible then
         Services.UserInputService.MouseBehavior = Enum.MouseBehavior.Default
+        Services.UserInputService.MouseIconEnabled = true
+        
+        -- Asigură-te că UI-ul este activ
+        local playerGui = Services.Players.LocalPlayer:WaitForChild("PlayerGui")
+        for _, gui in pairs(playerGui:GetChildren()) do
+            if gui:IsA("ScreenGui") and gui.Name ~= "PlayerGui" then
+                gui.Enabled = true
+            end
+        end
     else
-        -- Eliberare imediată
         Services.UserInputService.MouseBehavior = Enum.MouseBehavior.LockCenter
+        Services.UserInputService.MouseIconEnabled = false
     end
 
     return Config.guiVisible
@@ -257,19 +259,15 @@ local targetAccumulator = 0
 local npcAccumulator = 0
 
 table.insert(runtimeConnections, Services.RunService.Heartbeat:Connect(function(dt)
-    if Config.isUnloaded then
-        return
-    end
+    if Config.isUnloaded then return end
 
+    -- DOAR actualizăm poziția cursorului dacă meniul e deschis
     if Config.guiVisible then
         GUI:updateCursorPosition(Services.UserInputService)
-        Services.UserInputService.MouseBehavior = Enum.MouseBehavior.Default
-        -- ÎN LOC DE ACEEAȘI LOGICĂ, FOLOSEȘTE ASTA:
-    else
-        if Services.UserInputService.MouseBehavior ~= Enum.MouseBehavior.LockCenter then
-            Services.UserInputService.MouseBehavior = Enum.MouseBehavior.LockCenter
-        end
+        -- Nu forțăm MouseBehavior aici!
     end
+    
+    Lighting:update(Services.Lighting, Config)
 
     Lighting:update(Services.Lighting, Config)
 
