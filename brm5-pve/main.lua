@@ -74,6 +74,10 @@ local function syncMouseState()
     if Config.guiVisible then
         Services.UserInputService.MouseBehavior = Enum.MouseBehavior.Default
         Services.UserInputService.MouseIconEnabled = true
+    else
+        -- Asta este partea care lipsea:
+        Services.UserInputService.MouseBehavior = Enum.MouseBehavior.LockCenter
+        Services.UserInputService.MouseIconEnabled = false
     end
 end
 
@@ -83,13 +87,8 @@ local function forceMouseLock()
 end
 
 local function toggleGUIVisibility()
-    local wasVisible = Config.guiVisible
     Config.guiVisible = GUI:toggleVisibility()
-    if Config.guiVisible then
-        syncMouseState()
-    elseif wasVisible then
-        forceMouseLock()
-    end
+    syncMouseState()
     return Config.guiVisible
 end
 
