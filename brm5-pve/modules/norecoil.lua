@@ -1,52 +1,54 @@
 local Weapons = {}
 
-local function forceUnlock(tbl)
-    local mt = getrawmetatable(tbl)
-    if mt then
-        setreadonly(mt, false)
-        return true
-    end
-    return false
-end
-
 function Weapons.patchWeapons(replicatedStorage, patchOptions)
-    print("DEBUG: Caut Shared...")
     local shared = replicatedStorage:FindFirstChild("Shared")
-    if not shared then print("DEBUG: NU am găsit Shared!") return end
+    if not shared then return end
     
-    print("DEBUG: Caut Configs...")
     local configs = shared:FindFirstChild("Configs")
-    if not configs then print("DEBUG: NU am găsit Configs!") return end
+    if not configs then return end
     
-    -- Verificăm dacă există Weapon și Weapons_Player
     local weaponFolder = configs:FindFirstChild("Weapon")
-    if not weaponFolder then print("DEBUG: NU am găsit folderul Weapon!") return end
+    if not weaponFolder then return end
     
     local weaponsPlayer = weaponFolder:FindFirstChild("Weapons_Player")
-    if not weaponsPlayer then print("DEBUG: NU am găsit Weapons_Player!") return end
-
-    print("DEBUG: Am găsit tot! Încep iterarea...")
+    if not weaponsPlayer then return end
 
     for _, platform in pairs(weaponsPlayer:GetChildren()) do
         if platform:IsA("Folder") then
             for _, weapon in pairs(platform:GetChildren()) do
                 for _, child in pairs(weapon:GetChildren()) do
                     if child:IsA("ModuleScript") and child.Name:match("^Receiver%.") then
-                        print("DEBUG: Găsit receiver: " .. child.Name)
                         local success, receiver = pcall(require, child)
                         
                         if success and receiver and receiver.Config and receiver.Config.Tune then
                             local tune = receiver.Config.Tune
-                            forceUnlock(tune)
                             
-                            if patchOptions.recoil then
-                                tune.Recoil_X = 0
-                                tune.Recoil_Z = 0
-                                tune.Recoil_Camera = 0
-                                -- Adăugăm și asta pentru siguranță
-                                tune.Recoil_Random = Vector2.new(0, 0)
+                            -- Cream o copie nouă a tabelei de configurare (evităm readonly/freeze)
+                            local newTune = {}
+                            for k, v in pairs(tune) do
+                                newTune[k] = v
                             end
-                            print("DEBUG: Patch aplicat pe: " .. child.Name)
+                            
+                            -- Aplicăm patch-ul pe copia nouă
+                            if patchOptions.recoil then
+                                newTune.Recoil_X = 0
+                                newTune.Recoil_Z = 0
+                                newTune.RecoilForce_Tap = 0
+                                newTune.RecoilForce_Impulse = 0
+                                newTune.Recoil_Camera = 0
+                                newTune.Recoil_Range = Vector2.new(0, 0)
+                                newTune.RecoilAccelDamp_Crouch = Vector3.new(0, 0, 0)
+                                newTune.RecoilAccelDamp_Prone = Vector3.new(0, 0, 0)
+                                newTune.Recoil_Random = Vector2.new(0, 0)
+                            end
+                            
+                            if patchOptions.firemodes then
+                                newTune.Firemodes = {3, 2, 1, 0}
+                            end
+                            
+                            -- Suprascriem tabela originală cu cea nouă
+                            receiver.Config.Tune = newTune
+                            print("DEBUG: Patch FORȚAT pe: " .. child.Name)
                         end
                     end
                 end
