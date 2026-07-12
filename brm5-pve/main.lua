@@ -79,6 +79,18 @@ local function syncMouseState()
     end
 end
 
+local function resetUIFocus()
+    -- Căutăm ScreenGui-ul creat de Fluent pentru a-i reseta starea
+    local playerGui = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
+    for _, obj in pairs(playerGui:GetDescendants()) do
+        if obj:IsA("ScreenGui") and obj.Name == "Fluent" then
+            obj.Enabled = Config.guiVisible
+            -- Dacă există un frame de fundal (care blochează input-ul), asigură-te că e setat corect
+            -- Uneori Fluent pune .Modal = true pe un frame invizibil
+        end
+    end
+end
+
 local function forceMouseLock()
     Services.UserInputService.MouseBehavior = Enum.MouseBehavior.LockCenter
     Services.UserInputService.MouseIconEnabled = false
@@ -100,15 +112,13 @@ local function toggleGUIVisibility()
         Services.UserInputService.MouseBehavior = Enum.MouseBehavior.Default
         Services.UserInputService.MouseIconEnabled = true
     else
-        -- Aici era eroarea 'defaul' -> am pus 'Default'
+        -- 1. Resetăm comportamentul mouse-ului
         Services.UserInputService.MouseBehavior = Enum.MouseBehavior.LockCenter
         Services.UserInputService.MouseIconEnabled = false
         
-        -- Eliberăm focusul imediat ce închidem
-        task.spawn(function()
-            task.wait(0.05)
-            releaseCameraFocus()
-        end)
+        -- 2. Eliberăm focusul camerei (esențial pentru BRM5)
+        local VirtualInputManager = game:GetService("VirtualInputManager")
+        VirtualInputManager:SendMouseButtonEvent(0, 0, 0, false, game, 0)
     end
     
     return Config.guiVisible
@@ -249,10 +259,10 @@ table.insert(runtimeConnections, Services.RunService.Heartbeat:Connect(function(
 
     if Config.guiVisible then
         GUI:updateCursorPosition(Services.UserInputService)
-        -- Dacă meniul e deschis, forțăm Default
         Services.UserInputService.MouseBehavior = Enum.MouseBehavior.Default
     else
-        -- DACA MENIUL E INCHIS, forțăm LockCenter (ca să nu ne lase jocul cu mouse-ul liber)
+        -- DOAR DACĂ NU ESTE deja blocat corect, forțăm. 
+        -- Dacă jocul vrea să îl deblocheze, nu îl forța în fiecare milisecundă.
         if Services.UserInputService.MouseBehavior ~= Enum.MouseBehavior.LockCenter then
             Services.UserInputService.MouseBehavior = Enum.MouseBehavior.LockCenter
         end
