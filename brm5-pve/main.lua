@@ -112,7 +112,7 @@ local function toggleGUIVisibility()
     if Config.guiVisible then
         Services.UserInputService.MouseBehavior = Enum.MouseBehavior.Default
         Services.UserInputService.MouseIconEnabled = true
-        
+
         -- Asigură-te că UI-ul este activ
         local playerGui = Services.Players.LocalPlayer:WaitForChild("PlayerGui")
         for _, gui in pairs(playerGui:GetChildren()) do
@@ -173,13 +173,15 @@ local callbacks = {
     end,
 
     onStabilityToggle = function(enabled)
-        Config.patchOptions.recoil = true
+        Config.patchOptions.recoil = enabled
+        print("DEBUG: Stability Toggle activat, starea:", enabled)
         Weapons.patchWeapons(Services.ReplicatedStorage, Config.patchOptions)
         saveConfig()
     end,
 
     onFiremodeOptionsToggle = function(enabled)
         Config.patchOptions.firemodes = enabled
+        print("DEBUG: Firemode Toggle activat, starea:", enabled)
         Weapons.patchWeapons(Services.ReplicatedStorage, Config.patchOptions)
         saveConfig()
     end,
@@ -251,6 +253,7 @@ if Config.highlightEnabled then
     Markers.enable(NPCManager, Config)
 end
 if Config.patchOptions.recoil or Config.patchOptions.firemodes then
+    print("DEBUG: Inițializare patch-uri arme...")
     Weapons.patchWeapons(Services.ReplicatedStorage, Config.patchOptions)
 end
 
@@ -259,16 +262,17 @@ local targetAccumulator = 0
 local npcAccumulator = 0
 
 table.insert(runtimeConnections, Services.RunService.Heartbeat:Connect(function(dt)
-    if Config.isUnloaded then return end
+    if Config.isUnloaded then
+        return
+    end
 
     -- DOAR actualizăm poziția cursorului dacă meniul e deschis
     if Config.guiVisible then
         GUI:updateCursorPosition(Services.UserInputService)
         -- Nu forțăm MouseBehavior aici!
     end
-    
-    Lighting:update(Services.Lighting, Config)
 
+    Lighting:update(Services.Lighting, Config)
 
     npcAccumulator = npcAccumulator + dt
     if npcAccumulator >= Config.NPC_REFRESH_INTERVAL then
