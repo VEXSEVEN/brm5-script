@@ -9,6 +9,7 @@ local CACHE_BUSTER = MAIN_VERSION .. "-" .. tostring(os.time())
 
 local function loadModule(moduleName)
     local url = GITHUB_BASE .. moduleName .. ".lua?v=" .. CACHE_BUSTER
+    print("DEBUG: Descarc modulul: " .. moduleName .. " de la " .. url) -- ADĂUGAT
 
     local okResponse, response = pcall(function()
         return game:HttpGet(url)
