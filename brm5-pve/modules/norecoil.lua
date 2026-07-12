@@ -1,5 +1,3 @@
--- Modulul de patch (Weapons.lua)
-
 local Weapons = {}
 
 function Weapons.patchWeapons(replicatedStorage, patchOptions)
@@ -18,8 +16,6 @@ function Weapons.patchWeapons(replicatedStorage, patchOptions)
                         local success, receiver = pcall(require, child)
                         if success and receiver and receiver.Config and receiver.Config.Tune then
                             local tune = receiver.Config.Tune
-                            
-                            -- Eliminare completa a recoil-ului folosind variabilele tale
                             if patchOptions.recoil then
                                 tune.Recoil_X = 0
                                 tune.Recoil_Z = 0
@@ -30,8 +26,6 @@ function Weapons.patchWeapons(replicatedStorage, patchOptions)
                                 tune.RecoilAccelDamp_Crouch = Vector3.new(0, 0, 0)
                                 tune.RecoilAccelDamp_Prone = Vector3.new(0, 0, 0)
                             end
-                            
-                            -- Moduri de foc
                             if patchOptions.firemodes then 
                                 tune.Firemodes = {3, 2, 1, 0} 
                             end

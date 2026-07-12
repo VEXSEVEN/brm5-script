@@ -1,7 +1,4 @@
 -- BRM5 v7.0 by dexter 
--- Credits to ryknuq and their overvoltage script, which helped me understand how to integrate the Aim into my script. Without their script, I don't think I could have done this.
--- Coordinates all modules
-
 if typeof(clear) == "function" then
     clear()
 end
@@ -72,10 +69,11 @@ end
 
 local function syncMouseState()
     if Config.guiVisible then
+        -- Meniul deschis: forțăm mouse-ul liber
         Services.UserInputService.MouseBehavior = Enum.MouseBehavior.Default
         Services.UserInputService.MouseIconEnabled = true
     else
-        -- Asta este partea care lipsea:
+        -- Meniul închis: eliberăm controlul către joc
         Services.UserInputService.MouseBehavior = Enum.MouseBehavior.LockCenter
         Services.UserInputService.MouseIconEnabled = false
     end
@@ -88,19 +86,9 @@ end
 
 local function toggleGUIVisibility()
     Config.guiVisible = GUI:toggleVisibility()
-    -- Ensure camera/mouse control matches GUI visibility.
-    -- When GUI opens => MouseBehavior.Default.
-    -- When GUI closes => lock again.
-    if Config.guiVisible then
-        Services.UserInputService.MouseBehavior = Enum.MouseBehavior.Default
-        Services.UserInputService.MouseIconEnabled = true
-    else
-        Services.UserInputService.MouseBehavior = Enum.MouseBehavior.LockCenter
-        Services.UserInputService.MouseIconEnabled = false
-    end
+    syncMouseState()
     return Config.guiVisible
 end
-
 
 local function disconnectRuntimeConnections()
     for _, connection in ipairs(runtimeConnections) do
@@ -233,13 +221,18 @@ local targetAccumulator = 0
 local npcAccumulator = 0
 
 table.insert(runtimeConnections, Services.RunService.Heartbeat:Connect(function(dt)
-    if Config.isUnloaded then
-        return
+    if Config.isUnloaded then return end
+
+    -- ACTUALIZARE CURSOR (din GUI)
+    if Config.guiVisible then
+        GUI:updateCursorPosition(Services.UserInputService)
+        -- FORȚĂM MouseBehavior de fiecare dată când meniul e deschis
+        -- pentru a preveni "lupta" cu scripturile BRM5
+        if Services.UserInputService.MouseBehavior ~= Enum.MouseBehavior.Default then
+            Services.UserInputService.MouseBehavior = Enum.MouseBehavior.Default
+        end
     end
 
-    if Config.guiVisible then
-        syncMouseState()
-    end
     Lighting:update(Services.Lighting, Config)
 
     npcAccumulator = npcAccumulator + dt
@@ -250,14 +243,8 @@ table.insert(runtimeConnections, Services.RunService.Heartbeat:Connect(function(
 
     markerAccumulator = markerAccumulator + dt
     if markerAccumulator >= Config.RAYCAST_COOLDOWN then
-        local okMarkers, markerError = pcall(
-            Markers.updateColors,
-            NPCManager,
-            Services.Workspace.CurrentCamera or Services.camera,
-            Services.Workspace,
-            Services.localPlayer,
-            Config
-        )
+        local okMarkers, markerError = pcall(Markers.updateColors, NPCManager,
+            Services.Workspace.CurrentCamera or Services.camera, Services.Workspace, Services.localPlayer, Config)
         if not okMarkers then
             warn("Markers.updateColors failed: " .. tostring(markerError))
         end
@@ -271,12 +258,13 @@ table.insert(runtimeConnections, Services.RunService.Heartbeat:Connect(function(
     end
 end))
 
-table.insert(runtimeConnections, Services.UserInputService.InputBegan:Connect(function(input, gameProcessed)
-    if Config.isUnloaded then
-        return
-    end
+table.insert(runtimeConnections, Services.UserInputService.InputBegan:Connect(
+    function(input, gameProcessed)
+        if Config.isUnloaded then
+            return
+        end
 
-    if not gameProcessed and input.KeyCode == Enum.KeyCode.Insert then
-        toggleGUIVisibility()
-    end
-end))
+        if not gameProcessed and input.KeyCode == Enum.KeyCode.Insert then
+            toggleGUIVisibility()
+        end
+    end))
