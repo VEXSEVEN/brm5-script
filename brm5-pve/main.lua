@@ -88,9 +88,19 @@ end
 
 local function toggleGUIVisibility()
     Config.guiVisible = GUI:toggleVisibility()
-    syncMouseState()
+    -- Ensure camera/mouse control matches GUI visibility.
+    -- When GUI opens => MouseBehavior.Default.
+    -- When GUI closes => lock again.
+    if Config.guiVisible then
+        Services.UserInputService.MouseBehavior = Enum.MouseBehavior.Default
+        Services.UserInputService.MouseIconEnabled = true
+    else
+        Services.UserInputService.MouseBehavior = Enum.MouseBehavior.LockCenter
+        Services.UserInputService.MouseIconEnabled = false
+    end
     return Config.guiVisible
 end
+
 
 local function disconnectRuntimeConnections()
     for _, connection in ipairs(runtimeConnections) do
